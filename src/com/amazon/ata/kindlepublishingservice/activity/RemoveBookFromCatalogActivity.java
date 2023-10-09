@@ -1,5 +1,8 @@
 package com.amazon.ata.kindlepublishingservice.activity;
 
+import com.amazon.ata.kindlepublishingservice.converters.CatalogItemConverter;
+import com.amazon.ata.kindlepublishingservice.dao.CatalogDao;
+import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 import com.amazon.ata.kindlepublishingservice.models.requests.RemoveBookFromCatalogRequest;
 import com.amazon.ata.kindlepublishingservice.models.response.RemoveBookFromCatalogResponse;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -7,9 +10,15 @@ import com.amazonaws.services.lambda.runtime.Context;
 import javax.inject.Inject;
 
 public class RemoveBookFromCatalogActivity {
+    private final CatalogDao catalogDao;
     @Inject
-    RemoveBookFromCatalogActivity() {}
+    RemoveBookFromCatalogActivity(CatalogDao catalogDao) {
+        this.catalogDao = catalogDao;
+    }
     public RemoveBookFromCatalogResponse execute(RemoveBookFromCatalogRequest removeBookFromCatalogRequest) {
-        return null;
+
+        CatalogItemVersion deletedVersion = catalogDao.removeBookFromCatalog(removeBookFromCatalogRequest.getBookId());
+
+        return new RemoveBookFromCatalogResponse(CatalogItemConverter.toBook(deletedVersion));
     }
 }
