@@ -1,1 +1,81 @@
-PARTICIPANTS: use this file for creating the class diagram in mastery task 01
+@startuml
+'------ Activity ------'
+class GetBookActivity {
+    - recommendationServiceClient: RecommendationsServiceClient
+    - catalogDao: CatalogDao
+    + execute(GetBookRequest request): GetBookResponse
+}
+
+class GetPublishingStatusActivity {
+    + execute(GetPublishingStatusRequest publishingStatusRequest): GetPublishingStatusResponse
+}
+
+class RemoveBookFromCatalogActivity {
+    + execute(RemoveBookFromCatalogRequest removeBookFromCatalogRequest): RemoveBookFromCatalogResponse
+}
+
+class SubmitBookForPublishingActivity {
+    - publishingStatusDao: PublishingStatusDao
+    + execute(SubmitBookForPublishingRequest request): SubmitBookForPublishingResponse
+}
+
+'------ Clients ------'
+class RecommendationsServiceClient {
+    - recommendationsService: RecommendationsService
+    + List<BookRecommendation> getBookRecommendations(BookGenre genre)
+}
+
+'------ Dao ------'
+class CatalogDao {
+    - dynamoDbMapper: DynamoDBMapper
+    + CatalogItemVersion getBookFromCatalog(String bookId)
+    + CatalogItemVersion getLatestVersionOfBook(String bookId)
+}
+
+class PublishingStatusDao {
+    - ADDITIONAL_NOTES_PREFIX: String
+    - dynamoDbMapper: DynamoDBMapper
+    + PublishingStatusItem setPublishingStatus()
+}
+
+'------ DynamoDB Models ------'
+class CatalogItemVersion {
+    - @DynamoDBHashKey bookId: String
+    - @DynamoDBRangeKey version: int
+    - inactive: boolean
+    - title: String
+    - author: String
+    - text: String
+    - genre: BookGenre
+}
+
+class PublishingStatusItem {
+    - @DynamoDBHashKey publishingRecordId: String
+    - @DynamoDBRangeKey status: PublishingRecordStatus
+    - statusMessage: String
+    - bookId: String
+}
+
+'------ DynamoDB Models ------'
+class BookNotFoundException {
+    - serialVersionUID: long
+}
+
+class PublishingStatusNotFoundException {
+    - serialVersionUID: long
+}
+
+GetBookActivity --- RecommendationsServiceClient
+GetBookActivity --- CatalogDao
+
+SubmitBookForPublishingActivity --- PublishingStatusDao
+
+RecommendationsServiceClient --- RecommendationsService
+
+PublishingStatusDao -- DynamoDBMapper
+CatalogDao --- DynamoDBMapper
+CatalogDao --- CatalogItemVersion
+PublishingStatusDao --- PublishingStatusItem
+CatalogDao --- BookNotFoundException
+
+@enduml

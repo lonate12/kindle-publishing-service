@@ -1,1 +1,23 @@
-PARTICIPANTS: use this file for creating the remove book from catalog diagram in mastery task 01
+@startuml
+Client -> LoadBalancer: HTTP Request
+LoadBalancer -> RemoveBookFromCatalogActivity: execute(RemoveBookFromCatalogRequest)
+RemoveBookFromCatalogActivity -> CatalogDao: removeBookFromCatalog(bookId)
+CatalogDao -> DynamoDB: query for latest version of book
+
+alt if bookId does not exist or book is not active
+RemoveBookFromCatalogActivity <-- CatalogDao : throw BookNotFoundException
+LoadBalancer <-- RemoveBookFromCatalogActivity: transform to KindlePublishingClientException
+Client <-- LoadBalancer: 404 Response
+end
+
+CatalogDao <-- DynamoDB: book data
+'once we get the book data back, what do we do?
+'  Need to change the inactive attribute to true on the latest version
+CatalogDao -> DynamoDB: set current version "inactive" to true
+CatalogDao <-- DynamoDB
+RemoveBookFromCatalogActivity <-- CatalogDao: "true" if successfully updated, "false" otherwise
+RemoveBookFromCatalogActivity -> RemoveBookFromCatalogActivity: Create RemoveBookFromCatalogResponse
+LoadBalancer <-- RemoveBookFromCatalogActivity: RemoveBookFromCatalogResponse
+Client <-- LoadBalancer: 200 OK
+
+@enduml
