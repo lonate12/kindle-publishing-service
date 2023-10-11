@@ -77,4 +77,16 @@ public class PublishingStatusDao {
         dynamoDbMapper.save(item);
         return item;
     }
+
+    public List<PublishingStatusItem> getPublishingStatus(String publishingRecordId) {
+        // Need to get all items related to a given partition key (publishingRecordId)
+        PublishingStatusItem publishingStatusItem = new PublishingStatusItem();
+        publishingStatusItem.setPublishingRecordId(publishingRecordId);
+
+        DynamoDBQueryExpression<PublishingStatusItem> queryExpression = new DynamoDBQueryExpression<PublishingStatusItem>()
+                .withHashKeyValues(publishingStatusItem);
+
+
+        return dynamoDbMapper.query(PublishingStatusItem.class, queryExpression);
+    }
 }
