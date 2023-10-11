@@ -74,4 +74,11 @@ public class CatalogDao {
 
         return book;
     }
+
+    public void validateBookExists(String bookId) {
+        CatalogItemVersion book = getLatestVersionOfBook(bookId);
+        if (book == null) {
+            throw new BookNotFoundException("Publish request for existing book failed. Could not find book with bookId: " + bookId);
+        }
+    }
 }
