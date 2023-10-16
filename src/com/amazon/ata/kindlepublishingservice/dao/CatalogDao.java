@@ -3,6 +3,7 @@ package com.amazon.ata.kindlepublishingservice.dao;
 import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 import com.amazon.ata.kindlepublishingservice.exceptions.BookNotFoundException;
 import com.amazon.ata.kindlepublishingservice.models.Book;
+import com.amazon.ata.kindlepublishingservice.publishing.KindleFormatConverter;
 import com.amazon.ata.kindlepublishingservice.publishing.KindleFormattedBook;
 import com.amazon.ata.kindlepublishingservice.utils.KindlePublishingUtils;
 
@@ -80,5 +81,44 @@ public class CatalogDao {
         if (book == null) {
             throw new BookNotFoundException("Publish request for existing book failed. Could not find book with bookId: " + bookId);
         }
+    }
+
+    public CatalogItemVersion createBook(KindleFormattedBook kindleFormattedBook) {
+        // Create new CatalogItemVersion item.
+        String newBookId = KindlePublishingUtils.generateBookId();
+        CatalogItemVersion catalogItemVersion = new CatalogItemVersion(newBookId,
+                1,
+                false,
+                kindleFormattedBook.getTitle(),
+                kindleFormattedBook.getAuthor(),
+                kindleFormattedBook.getText(),
+                kindleFormattedBook.getGenre()
+        );
+
+        dynamoDbMapper.save(catalogItemVersion);
+
+        return catalogItemVersion;
+    }
+
+    public CatalogItemVersion updateBook(KindleFormattedBook kindleFormattedBook) {
+        try {
+            validateBookExists(kindleFormattedBook.getBookId());
+        } catch (BookNotFoundException e) {
+            throw new BookNotFoundException(e.getMessage());
+        }
+
+        CatalogItemVersion versionToBeDeactivated = getLatestVersionOfBook(kindleFormattedBook.getBookId());
+        CatalogItemVersion versionToBeCreated = new CatalogItemVersion(
+                versionToBeDeactivated.getBookId(),
+                versionToBeDeactivated.getVersion() + 1,
+                false,
+                kindleFormattedBook.getTitle(),
+                kindleFormattedBook.getAuthor(),
+                kindleFormattedBook.getText(),
+                kindleFormattedBook.getGenre()
+                );
+        this.removeBookFromCatalog(versionToBeDeactivated.getBookId());
+        dynamoDbMapper.save(versionToBeCreated);
+        return versionToBeCreated;
     }
 }

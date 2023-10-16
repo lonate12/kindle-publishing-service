@@ -20,6 +20,19 @@ public class CatalogItemVersion {
     private String text;
     private BookGenre genre;
 
+    public CatalogItemVersion() {
+    }
+
+    public CatalogItemVersion(String bookId, int version, boolean inactive, String title, String author, String text, BookGenre genre) {
+        this.bookId = bookId;
+        this.version = version;
+        this.inactive = inactive;
+        this.title = title;
+        this.author = author;
+        this.text = text;
+        this.genre = genre;
+    }
+
     @DynamoDBHashKey(attributeName = "bookId")
     public String getBookId() {
         return bookId;

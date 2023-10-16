@@ -8,7 +8,7 @@ import javax.inject.Inject;
 /**
  * A Runnable that performs no action in its run method. It is currently being scheduled to run repeatedly. This class
  * comes with the service, but should be removed once your publishing task that implements Runnable is created and the
- * providePublishingTask() method is updated to return it in the PublishingModiule.
+ * providePublishingTask() method is updated to return it in the PublishingModule.
  */
 public class NoOpTask implements Runnable {
 
