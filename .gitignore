@@ -11,3 +11,5 @@ annotation-generated-tst
 
 # Ignore Gradle project-specific cache directory
 .gradle
+
+original-README.md
